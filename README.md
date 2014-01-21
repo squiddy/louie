@@ -4,7 +4,8 @@ louie - gamepad browser control
 Think Steam "Big Picture"-mode control in your browser.
 
 Why? I liked the idea behind the controls. Doesn't matter if it ends up being
-useful or not.
+useful or not. Take this as a proof-of-concept, it won't be able to hold up
+against Steams optimized browser.
 
 
 Features (WIP)

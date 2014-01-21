@@ -1,0 +1,14 @@
+{
+  "name": "louie",
+  "version": "0.0.0",
+  "description": "gamepad browser control",
+  "main": "server.js",
+  "dependencies": {
+    "joystick": "~0.1.1",
+    "express": "~3.4.8",
+    "ws": "~0.4.31"
+  },
+  "devDependencies": {},
+  "author": "",
+  "license": "MIT"
+}
