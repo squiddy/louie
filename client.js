@@ -1,12 +1,13 @@
+var pageTransform = {zoom: 1, posX: 0, posY: 0},
+    lastPageTransform = {zoom: 1, posX: 0, posY: 0};
+
 // Zoom
 
-var zoomInterval = null,
-	zoomLevel = 1;
+var zoomInterval = null;
 
 function zoomStep(step) {
-	zoomLevel += step;
-	if (zoomLevel < 0.2) { zoomLevel = 0.2; }
-	updateView();
+	pageTransform.zoom += step;
+	if (pageTransform.zoom < 0.2) { pageTransform.zoom = 0.2; }
 }
 
 function startZoom(step) {
@@ -23,15 +24,12 @@ function stopZoom() {
 // Pan
 
 var panInterval = null,
-	positionX = 0,
-	positionY = 0,
 	deltaX = 0,
 	deltaY = 0;
 
 function panStep() {
-	positionX = parseInt(positionX + deltaX);
-	positionY = parseInt(positionY + deltaY);
-	updateView();
+	pageTransform.posX = parseInt(pageTransform.posX + deltaX);
+	pageTransform.posY = parseInt(pageTransform.posY + deltaY);
 }
 
 function startPan() {
@@ -108,10 +106,23 @@ function setUp() {
 	$cursor = $("<div class='LOUIE_cursor' />");
 	$cursor.html('<svg><circle cx="50" cy="50" r="10" /></svg>');
 	$cursor.appendTo("body");
+
+	window.requestAnimationFrame(update);
 }
 
-function updateView() {
-	var t = "scale(" + zoomLevel + ") translate(" + positionX + "px, " + positionY + "px)";
+function update(timestamp) {
+	var lastT = lastPageTransform,
+        nowT = pageTransform;
+	
+	if (lastT.zoom === nowT.zoom && lastT.posX === nowT.posX && lastT.posY === nowT.posY) {
+		// Nothing changed, skip this frame
+		window.requestAnimationFrame(update);
+		return;
+	}
+
+	lastPageTransform = {zoom: nowT.zoom, posX: nowT.posX, posY: nowT.posY};
+
+	var t = "scale(" + nowT.zoom + ") translate(" + nowT.posX + "px, " + nowT.posY + "px)";
 	$page.css("-webkit-transform", t);
 
 	// Find element under our cursor. Need to hide the cursor, otherwise all we
@@ -131,6 +142,8 @@ function updateView() {
 	} else {
 		$currentElement = null;
 	}
+
+	window.requestAnimationFrame(update);
 }
 
 var element = document.createElement("script");
