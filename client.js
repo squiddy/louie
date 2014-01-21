@@ -29,8 +29,8 @@ var panInterval = null,
 	deltaY = 0;
 
 function panStep() {
-	positionX += deltaX;
-	positionY += deltaY;
+	positionX = parseInt(positionX + deltaX);
+	positionY = parseInt(positionY + deltaY);
 	updateView();
 }
 
