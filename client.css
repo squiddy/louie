@@ -6,10 +6,6 @@ body {
   overflow: hidden;
 }
 
-.LOUIE_hover {
-  background: red;
-}
-
 .LOUIE_cursor {
   -webkit-transform: translate(-50%, -50%);
   position: fixed;
@@ -26,4 +22,8 @@ body {
 .LOUIE_cursor circle {
   fill: black;
   opacity: 0.3;
+}
+
+.LOUIE_cursor.hover circle {
+  fill: red;
 }

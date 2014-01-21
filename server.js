@@ -20,6 +20,10 @@ app.get('/louie.css', function(req, res) {
 	res.sendfile(__dirname + '/client.css');
 });
 
+app.get('/test.html', function(req, res) {
+    res.sendfile(__dirname + '/test/testpage.html');
+});
+
 // Provide both HTTP and HTTPS (otherwise browsers may refuse to load
 // our script in secure pages)
 

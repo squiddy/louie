@@ -42,6 +42,31 @@ function stopPan() {
 	panInterval = null;
 }
 
+
+function clickElement(element) {
+    if (!element) return;
+
+    var evt = document.createEvent("MouseEvents");
+    evt.initMouseEvent(
+        "click",
+        true,       // canBubble
+        true,       // canceable
+        window,     // view
+        0,          // detail
+        0,          // screenX
+        0,          // screenY
+        0,          // clientX
+        0,          // clientY
+        false,      // ctrlKey
+        false,      // altKey
+        false,      // shiftKey
+        false,      // metaKey
+        0,          // button
+        null        // relatedTarget
+    );
+    element.dispatchEvent(evt);
+}
+
 // Handle incoming joystick data
 
 var ws = new WebSocket("ws://localhost:8080");
@@ -77,10 +102,8 @@ function handleData(data) {
 			deltaY = 0;
 		}
 	// Click link -> Y
-	} else if (data.number === 2 && data.type === "button") {
-		if ($currentElement) {
-			$currentElement.get(0).click();
-		}
+	} else if (data.number === 2 && data.type === "button" && data.value === 1) {
+        clickElement(currentElement);
 	} else {
 		console.log(data);
 	}
@@ -92,9 +115,9 @@ function handleData(data) {
 
 var centerX = window.innerWidth / 2,
 	centerY = window.innerHeight / 2,
+	currentElement,
 	$page,
-	$cursor,
-	$currentElement;
+	$cursor;
 
 function setUp() {
 	// Move page content into a new element that can be transformed independently
@@ -108,6 +131,25 @@ function setUp() {
 	$cursor.appendTo("body");
 
 	window.requestAnimationFrame(update);
+}
+
+// Check if the element is (part of) a link
+function isLink(element) {
+    var depth = 0;
+    while (element && depth < 10) {
+        if (element.nodeName === "A") {
+            return true;
+        }
+        
+        var style = window.getComputedStyle(element);
+        if (style && style.getPropertyValue("cursor") === "pointer") {
+            return true;
+        }
+
+        element = element.parentNode;
+    }
+
+    return false;
 }
 
 function update(timestamp) {
@@ -131,17 +173,15 @@ function update(timestamp) {
 	element = document.elementFromPoint(centerX, centerY);
 	$cursor.show();
 
-	// If it's a link, highlight and save it (so we can click on it later)
-	if ($currentElement) {
-		$currentElement.removeClass("LOUIE_hover");
-	}
-
-	if (element.nodeName === "A") {
-		$currentElement = $(element);
-		$currentElement.addClass("LOUIE_hover");
-	} else {
-		$currentElement = null;
-	}
+    if (element && element !== currentElement) {
+        // If it's a link change cursor
+        if (isLink(element)) {
+            $cursor.addClass("hover");
+            currentElement = element;
+        } else {
+            $cursor.removeClass("hover");
+        }
+    }
 
 	window.requestAnimationFrame(update);
 }
