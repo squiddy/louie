@@ -1,3 +1,43 @@
+var Gamepad = {
+    found: false,
+
+    pollGamepads: function() {
+        var pad = navigator.webkitGetGamepads && navigator.webkitGetGamepads()[0];
+        if (pad) {
+            this.found = true;
+        }
+    },
+
+    update: function() {
+        var pad = navigator.webkitGetGamepads()[0];
+
+        this.buttons = {
+            primary: pad.buttons[0] > 0.5,
+            secondary: pad.buttons[1] > 0.5,
+            tertiary: pad.buttons[2] > 0.5,
+            quaternary: pad.buttons[3] > 0.5,
+            leftShoulder: pad.buttons[4] > 0.5,
+            rightShoulder: pad.buttons[5] > 0.5
+        };
+
+        this.axes = {
+            leftStickX: this.denoiseAxis(pad.axes[0]),
+            leftStickY: this.denoiseAxis(pad.axes[1])
+        };
+    },
+
+    // Sometimes the value of an axis doesn't go back to zero.
+    denoiseAxis: function(value) {
+        if (value < -0.01) {
+            return value;
+        } else if (value > 0.01) {
+            return value;
+        } else {
+            return 0;
+        }
+    }
+};
+
 var pageTransform = {zoom: 1, posX: 0, posY: 0},
     lastPageTransform = {zoom: 1, posX: 0, posY: 0};
 
@@ -69,48 +109,40 @@ function clickElement(element) {
 
 // Handle incoming joystick data
 
-var ws = new WebSocket("ws://localhost:8080");
+function handleInput() {
+    // Zoom
+    if (Gamepad.buttons.leftShoulder) {
+        startZoom(-0.1);
+    } else if (Gamepad.buttons.rightShoulder) {
+        startZoom(+0.1);
+    } else if (!Gamepad.buttons.leftShoulder || !Gamepad.buttons.rightShoulder) {
+        stopZoom();
+    }
 
-ws.onmessage = function(evt) { 
-	var data = JSON.parse(evt.data);
-	handleData(data);
-};
+    // Move horizontally
+    if (Gamepad.axes.leftStickX) {
+        deltaX = -Gamepad.axes.leftStickX * 10;
+        startPan();
+    } else {
+        deltaX = 0;
+    }
 
-function handleData(data) {
-	// Left bumber -> zoom out
-	if (data.number === 4 && data.value === 1) {
-		startZoom(-0.1);
-	// Right bumber -> zoom in
-	} else if (data.number === 5 && data.value === 1) {
-		startZoom(+0.1);
-	} else if ((data.number === 4 || data.number === 5) && data.value === 0) {
-		stopZoom();
-	// Left stick -> left/right
-	} else if (data.number === 0) {
-		if (data.value !== 0) {
-			deltaX = -data.value / 32000 * 10;
-			startPan();
-		} else {
-			deltaX = 0;
-		}
-	// Right stick -> up/down
-	} else if (data.number === 1) {
-		if (data.value !== 0) {
-			deltaY = -data.value / 32000 * 10;
-			startPan();
-		} else {
-			deltaY = 0;
-		}
-	// Click link -> Y
-	} else if (data.number === 2 && data.type === "button" && data.value === 1) {
+    // Move vertically
+    if (Gamepad.axes.leftStickY) {
+        deltaY = -Gamepad.axes.leftStickY * 10;
+        startPan();
+    } else {
+        deltaY = 0;
+    }
+
+    // Click link -> Y
+    if (Gamepad.buttons.primary) {
         clickElement(currentElement);
-	} else {
-		console.log(data);
-	}
+    }
 
-	if (deltaX === 0 && deltaY === 0) {
-		stopPan();
-	}
+    if (deltaX === 0 && deltaY === 0) {
+        stopPan();
+    }
 }
 
 var centerX = window.innerWidth / 2,
@@ -153,6 +185,14 @@ function isLink(element) {
 }
 
 function update(timestamp) {
+    if (!Gamepad.found) {
+        Gamepad.pollGamepads();
+        return window.requestAnimationFrame(update);
+    }
+
+    Gamepad.update();
+    handleInput();
+
 	var lastT = lastPageTransform,
         nowT = pageTransform;
 	

@@ -1,13 +1,9 @@
-// Responsible for sending gamepad events to the browser.
-//
 // Serves client JS code / CSS that the chrome extension injects into the page.
 
-var WebSocketServer = require('ws').Server,
-    http = require('http'),
+var http = require('http'),
 	https = require('https'),
 	fs = require('fs'),
-    express = require('express'),
-	joystick = require('joystick');
+    express = require('express');
 
 var app = express();
 
@@ -37,18 +33,3 @@ var options = {
 
 var httpsServer = https.createServer(options, app);
 httpsServer.listen(8081);
-
-// Setup websocket and listen for events from the gamepad. Send events
-// to all connected clients.
-
-var wss = new WebSocketServer({server: server});
-
-var device = new joystick(0, 3500, 350);
-device.on('button', sendUpdate);
-device.on('axis', sendUpdate);
-
-function sendUpdate(data) {
-	wss.clients.forEach(function(client) {
-		client.send(JSON.stringify(data));
-	});
-}
