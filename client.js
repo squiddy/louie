@@ -47,7 +47,7 @@ var zoomInterval = null;
 
 function zoomStep(step) {
 	pageTransform.zoom += step;
-	if (pageTransform.zoom < 0.2) { pageTransform.zoom = 0.2; }
+	if (pageTransform.zoom < 0.5) { pageTransform.zoom = 0.5; }
 }
 
 function startZoom(step) {
@@ -112,9 +112,9 @@ function clickElement(element) {
 function handleInput() {
     // Zoom
     if (Gamepad.buttons.leftShoulder) {
-        startZoom(-0.1);
+        startZoom(-0.04);
     } else if (Gamepad.buttons.rightShoulder) {
-        startZoom(+0.1);
+        startZoom(+0.04);
     } else if (!Gamepad.buttons.leftShoulder || !Gamepad.buttons.rightShoulder) {
         stopZoom();
     }
@@ -148,19 +148,15 @@ function handleInput() {
 var centerX = window.innerWidth / 2,
 	centerY = window.innerHeight / 2,
 	currentElement,
-	$page,
 	$cursor;
 
 function setUp() {
-	// Move page content into a new element that can be transformed independently
-	// from our cursor.
-	$("body").wrapInner("<div class='LOUIE_page' />");
-	$page = $(".LOUIE_page");
-	$page.css("-webkit-transform-origin", centerX + "px " + centerY + "px");
+	$("html").css("-webkit-transform-origin", centerX + "px " + centerY + "px");
 
 	$cursor = $("<div class='LOUIE_cursor' />");
 	$cursor.html('<svg><circle cx="50" cy="50" r="10" /></svg>');
-	$cursor.appendTo("body");
+	// Surprised this works (in chrome/FF), but it makes things much easier
+	$cursor.appendTo("html");
 
 	window.requestAnimationFrame(update);
 }
@@ -204,8 +200,8 @@ function update(timestamp) {
 
 	lastPageTransform = {zoom: nowT.zoom, posX: nowT.posX, posY: nowT.posY};
 
-	var t = "scale(" + nowT.zoom + ") translate(" + nowT.posX + "px, " + nowT.posY + "px)";
-	$page.css("-webkit-transform", t);
+	var t = "scale(" + nowT.zoom + ") translate3d(" + nowT.posX + "px, " + nowT.posY + "px, 0)";
+	$("body").css("-webkit-transform", t);
 
 	// Find element under our cursor. Need to hide the cursor, otherwise all we
 	// get is the cursor.

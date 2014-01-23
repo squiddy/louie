@@ -27,8 +27,6 @@ Client
 * vimium link navigation as alternative to clicking links
 * kinetic scrolling
 * request fullscreen
-* improve page isolation (move attributes on body to page div, change affected
-  stylesheet selectors)
 * keep zoom-level consistent across pages
 
 Browser-Extension

@@ -2,10 +2,6 @@ body {
   overflow: hidden;
 }
 
-.LOUIE_page {
-  overflow: hidden;
-}
-
 .LOUIE_cursor {
   -webkit-transform: translate(-50%, -50%);
   position: fixed;
